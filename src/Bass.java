@@ -59,6 +59,6 @@ public class Bass extends StringInstrument {
 
     @Override
     protected Object clone() throws CloneNotSupportedException {
-        return new Bass(getBrand(), getPrice(), getNumOfStrings(), isFretless());
+        return super.clone();
     }
 }

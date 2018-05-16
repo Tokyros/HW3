@@ -24,6 +24,6 @@ public class Saxophone extends WindInstrument{
 
     @Override
     protected Object clone() throws CloneNotSupportedException {
-        return new Saxophone(getBrand(), getPrice());
+        return super.clone();
     }
 }

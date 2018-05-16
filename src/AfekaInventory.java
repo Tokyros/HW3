@@ -1,16 +1,16 @@
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class AfekaInventory<E extends MusicalInstrument> implements InventoryManagement {
-    private ArrayList<E> instrumentsList = new ArrayList<>();
+public class AfekaInventory implements InventoryManagement {
+    private ArrayList<MusicalInstrument> instrumentsList = new ArrayList<>();
     private double totalPrice = 0;
     private boolean isSorted = false;
 
-    public ArrayList<E> getInstrumentsList() {
+    public ArrayList<MusicalInstrument> getInstrumentsList() {
         return instrumentsList;
     }
 
-    public void setInstrumentsList(ArrayList<E> instrumentsList) {
+    public void setInstrumentsList(ArrayList<MusicalInstrument> instrumentsList) {
         this.instrumentsList = instrumentsList;
     }
 
@@ -35,6 +35,7 @@ public class AfekaInventory<E extends MusicalInstrument> implements InventoryMan
         for (MusicalInstrument musicalInstrument : arrFrom) {
             if (musicalInstrument instanceof StringInstrument) addInstrument(arrayTo, musicalInstrument);
         }
+        System.out.println("All String Instruments Added Successfully!");
     }
 
     @Override
@@ -42,12 +43,14 @@ public class AfekaInventory<E extends MusicalInstrument> implements InventoryMan
         for (MusicalInstrument musicalInstrument : arrFrom) {
             if (musicalInstrument instanceof WindInstrument) addInstrument(arrayTo, musicalInstrument);
         }
+        System.out.println("All Wind Instruments Added Successfully");
     }
 
     @Override
     public void sortByBrandAndPrice(ArrayList<? extends MusicalInstrument> arrToSort){
         Collections.sort(arrToSort);
         setSorted(true);
+        System.out.println("Instruments Sorted Successfully!");
     }
 
     @Override
@@ -60,8 +63,7 @@ public class AfekaInventory<E extends MusicalInstrument> implements InventoryMan
         int m;
         while (l <= r){
             m = (r + l)/2;
-            MusicalInstrument middleInstrument = sortedArrToSearch.get(m);
-            int comparison = middleInstrument.compareTo(brand, price);
+            int comparison = sortedArrToSearch.get(m).compareTo(brand, price);
             if (comparison == 0){
                 return m;
             } else if (comparison < 0){

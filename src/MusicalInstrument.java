@@ -71,11 +71,6 @@ public abstract class MusicalInstrument implements InstrumentFunc{
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return this.clone();
-    }
-
-    @Override
     public String toString() {
         String stringToFormat = "%-8s %-9s| Price: " + (getPrice() instanceof Integer ? "%7d," : "%7.2f,");
         return String.format(stringToFormat, getBrand(), getClass().getCanonicalName(), getPrice());

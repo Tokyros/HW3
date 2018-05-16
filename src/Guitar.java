@@ -94,11 +94,11 @@ public class Guitar extends StringInstrument {
 
     @Override
     public String toString() {
-        return super.toString() + String.format(" Type: %7s", getType().toString());
+        return super.toString() + String.format(" Type: %7s", getType());
     }
 
-//    @Override
-//    protected Object clone() throws CloneNotSupportedException {
-//        return new Guitar(getBrand(), getPrice(), getNumOfStrings(), type);
-//    }
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
 }

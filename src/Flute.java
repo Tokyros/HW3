@@ -51,6 +51,6 @@ public class Flute extends WindInstrument {
 
     @Override
     protected Object clone() throws CloneNotSupportedException {
-        return new Flute(getBrand(), getPrice(), getMaterial(), fluteType);
+        return super.clone();
     }
 }

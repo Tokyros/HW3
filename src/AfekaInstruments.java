@@ -18,12 +18,14 @@ public abstract class AfekaInstruments {
 
     public static void main(String[] args) {
         ArrayList<MusicalInstrument> allInstruments = new ArrayList<>();
-        File file = getInstrumentsFileFromUser();
+        Scanner consoleScanner = new Scanner(System.in);
+        File file = getInstrumentsFileFromUser(consoleScanner);
 
         loadInstrumentsFromFile(file, allInstruments);
 
         if(allInstruments.size() == 0) {
             System.out.println("There are no instruments in the store currently");
+            consoleScanner.close();
             return;
         }
 
@@ -38,15 +40,20 @@ public abstract class AfekaInstruments {
         System.out.println("\n\nMost Expensive Instrument:\n" + mostExpensive);
 
         startInventoryMenu(allInstruments);
+        consoleScanner.close();
     }
 
-    public static void startInventoryMenu(ArrayList<? extends MusicalInstrument> allInstruments){
+    private static void startInventoryMenu(ArrayList<? extends MusicalInstrument> allInstruments){
         Scanner scanner = new Scanner(System.in);
-        AfekaInventory<MusicalInstrument> afekaInventory = new AfekaInventory<>();
+        AfekaInventory afekaInventory = new AfekaInventory();
         while (true){
             System.out.println(MENU_STRING);
-            if (!scanner.hasNextInt()) return;
+            if (!scanner.hasNextInt()) {
+                scanner.close();
+                return;
+            }
             int choice = scanner.nextInt();
+            scanner.nextLine();
             switch (choice){
                 case 1:
                     afekaInventory.addAllStringInstruments(allInstruments, afekaInventory.getInstrumentsList());
@@ -69,12 +76,15 @@ public abstract class AfekaInstruments {
                 case 7:
                     printInventory(afekaInventory);
                     break;
+                default:
+                    scanner.close();
+                    return;
             }
         }
 
     }
 
-    private static void printInventory(AfekaInventory<MusicalInstrument> afekaInventory) {
+    private static void printInventory(AfekaInventory afekaInventory) {
         if (afekaInventory.getInstrumentsList().isEmpty()){
             System.out.println("There Is No Instruments To Show");
         } else {
@@ -83,8 +93,8 @@ public abstract class AfekaInstruments {
         System.out.println(String.format("Total Price: %4.2f Sorted: %s", afekaInventory.getTotalPrice(), afekaInventory.isSorted()));
     }
 
-    private static void emptyInventory(Scanner scanner, AfekaInventory<MusicalInstrument> afekaInventory) {
-        System.out.print("Delete all items, ");
+    private static void emptyInventory(Scanner scanner, AfekaInventory afekaInventory) {
+        System.out.println("DELETE ALL INSTRUMENTS:");
         if (confirm(scanner)) afekaInventory.removeAll(afekaInventory.getInstrumentsList());
     }
 
@@ -102,61 +112,65 @@ public abstract class AfekaInstruments {
         }
     }
 
-    private static void searchInstrument(Scanner scanner, AfekaInventory<MusicalInstrument> afekaInventory) {
-        MusicalInstrument instrumentFromSearch = getMusicalInstrumentFromUserInput(scanner, afekaInventory);
-        if (instrumentFromSearch != null) System.out.println("Result:\n" + instrumentFromSearch);
+    private static void searchInstrument(Scanner scanner, AfekaInventory afekaInventory) {
+        System.out.println("SEARCH INSTRUMENT");
+        getMusicalInstrumentFromUserInput(scanner, afekaInventory);
     }
 
-    private static void deleteInstrument(Scanner scanner, AfekaInventory<MusicalInstrument> afekaInventory) {
+    private static void deleteInstrument(Scanner scanner, AfekaInventory afekaInventory) {
+        System.out.println("DELETE INSTRUMENT");
         MusicalInstrument instrumentToDelete = getMusicalInstrumentFromUserInput(scanner, afekaInventory);
         if (instrumentToDelete != null) {
-            boolean confirm = confirm(scanner);
-            if (confirm){
+            if (confirm(scanner)){
                 boolean success = afekaInventory.removeInstrument(afekaInventory.getInstrumentsList(), instrumentToDelete);
                 if (success){
-                    System.out.println("Instrument deleted successfully:\n" + instrumentToDelete);
+                    System.out.println("Instrument deleted successfully!");
                 } else {
-                    System.out.println("Could not delete instrument:\n" + instrumentToDelete);
+                    System.out.println("Could not delete instrument!");
                 }
             }
         }
     }
 
-    private static MusicalInstrument getMusicalInstrumentFromUserInput(Scanner scanner, AfekaInventory<MusicalInstrument> afekaInventory) {
+    private static MusicalInstrument getMusicalInstrumentFromUserInput(Scanner scanner, AfekaInventory afekaInventory) {
         double price;
-
-        System.out.print("Enter price: ");
-        if (scanner.hasNextDouble()) price = scanner.nextDouble();
-        else price = 0;
-        scanner.nextLine();
 
         System.out.println("Enter brand: ");
         String brand = scanner.nextLine();
+
+        System.out.print("Enter price: ");
+        while (!scanner.hasNextDouble()){
+            System.out.println("Price must be a number!");
+            scanner.nextLine();
+        }
+        price = scanner.nextDouble();
+        scanner.nextLine();
 
         try {
             int index = afekaInventory.binarySearchByBrandAndPrice(afekaInventory.getInstrumentsList(), price, brand);
 
             if (index == -1) {
-                System.out.println("Could not find instrument");
+                System.out.println("Instrument Not Found!");
                 return null;
             }
 
-            return afekaInventory.getInstrumentsList().get(index);
+            MusicalInstrument musicalInstrument = afekaInventory.getInstrumentsList().get(index);
+            System.out.println("RESULT:\n" + musicalInstrument.toString());
+            return musicalInstrument;
         } catch (NotSortedException e){
             System.out.println(e.getMessage());
             return null;
         }
     }
 
-    public static File getInstrumentsFileFromUser(){
+    public static File getInstrumentsFileFromUser(Scanner consoleScanner){
         boolean stopLoop = true;
         File file;
-        Scanner consoleScanner = new Scanner(System.in);
 
         do {
             System.out.println("Please enter instruments file name / path:");
             //"C:\\Users\\SBK\\Downloads\\תרגיל בית מס 2\\instruments1b.txt";
-            String filepath = consoleScanner.nextLine();
+            String filepath = "C:\\Users\\ps3to_000\\Desktop\\instruments1b.txt";//consoleScanner.nextLine();
             file = new File(filepath);
             stopLoop = file.exists() && file.canRead();
 
@@ -167,7 +181,7 @@ public abstract class AfekaInstruments {
         return file;
     }
 
-    public static void loadInstrumentsFromFile(File file, ArrayList allInstruments){
+    public static void loadInstrumentsFromFile(File file, ArrayList<MusicalInstrument> allInstruments){
         Scanner scanner = null;
 
         try {
@@ -189,15 +203,15 @@ public abstract class AfekaInstruments {
             System.err.println("\nFile Error! File was not found");
             System.exit(2);
         } finally {
-            scanner.close();
+            if (scanner != null) scanner.close();
         }
         System.out.println("\nInstruments loaded from file successfully!\n");
 
     }
 
-    public static ArrayList loadGuitars(Scanner scanner){
+    public static ArrayList<MusicalInstrument> loadGuitars(Scanner scanner){
         int numOfInstruments = scanner.nextInt();
-        ArrayList guitars = new ArrayList(numOfInstruments);
+        ArrayList<MusicalInstrument> guitars = new ArrayList<>(numOfInstruments);
 
         for(int i = 0; i < numOfInstruments ; i++)
             guitars.add(new Guitar(scanner));
@@ -205,9 +219,9 @@ public abstract class AfekaInstruments {
         return guitars;
     }
 
-    public static ArrayList loadBassGuitars(Scanner scanner){
+    public static ArrayList<MusicalInstrument> loadBassGuitars(Scanner scanner){
         int numOfInstruments = scanner.nextInt();
-        ArrayList bassGuitars = new ArrayList(numOfInstruments);
+        ArrayList<MusicalInstrument> bassGuitars = new ArrayList<>(numOfInstruments);
 
         for(int i = 0; i < numOfInstruments ; i++)
             bassGuitars.add(new Bass(scanner));
@@ -215,9 +229,9 @@ public abstract class AfekaInstruments {
         return bassGuitars;
     }
 
-    public static ArrayList loadFlutes(Scanner scanner){
+    public static ArrayList<MusicalInstrument> loadFlutes(Scanner scanner){
         int numOfInstruments = scanner.nextInt();
-        ArrayList flutes = new ArrayList(numOfInstruments);
+        ArrayList<MusicalInstrument> flutes = new ArrayList<>(numOfInstruments);
 
         for(int i = 0; i < numOfInstruments ; i++)
             flutes.add(new Flute(scanner));
@@ -226,9 +240,9 @@ public abstract class AfekaInstruments {
         return flutes;
     }
 
-    public static ArrayList loadSaxophones(Scanner scanner){
+    public static ArrayList<MusicalInstrument> loadSaxophones(Scanner scanner){
         int numOfInstruments = scanner.nextInt();
-        ArrayList saxophones = new ArrayList(numOfInstruments);
+        ArrayList<MusicalInstrument> saxophones = new ArrayList<>(numOfInstruments);
 
         for(int i = 0; i < numOfInstruments ; i++)
             saxophones.add(new Saxophone(scanner));
@@ -236,7 +250,7 @@ public abstract class AfekaInstruments {
         return saxophones;
     }
 
-    public static void addAllInstruments(ArrayList instruments, ArrayList moreInstruments){
+    public static void addAllInstruments(ArrayList<MusicalInstrument> instruments, ArrayList<MusicalInstrument> moreInstruments){
         for(int i = 0 ; i < moreInstruments.size() ; i++){
             instruments.add(moreInstruments.get(i));
         }
@@ -249,9 +263,9 @@ public abstract class AfekaInstruments {
 
 
 
-    public static int getNumOfDifferentElements(ArrayList instruments){
+    public static int getNumOfDifferentElements(ArrayList<MusicalInstrument> instruments){
         int numOfDifferentInstruments;
-        ArrayList differentInstruments = new ArrayList();
+        ArrayList<MusicalInstrument> differentInstruments = new ArrayList<>();
         System.out.println();
 
         for(int i = 0 ; i < instruments.size() ; i++){

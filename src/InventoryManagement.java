@@ -7,7 +7,7 @@ public interface InventoryManagement {
 
     void sortByBrandAndPrice(ArrayList<? extends MusicalInstrument> arrToSort);
 
-    int binarySearchByBrandAndPrice(ArrayList<? extends MusicalInstrument> sortedArrToSearch, Number price, String brand);
+    int binarySearchByBrandAndPrice(ArrayList<? extends MusicalInstrument> sortedArrToSearch, Number price, String brand) throws NotSortedException;
 
     void addInstrument(ArrayList<? super MusicalInstrument> arrToAddTo, MusicalInstrument musicalInstrument);
 

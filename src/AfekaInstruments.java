@@ -45,7 +45,7 @@ public abstract class AfekaInstruments {
 
     private static void startInventoryMenu(ArrayList<? extends MusicalInstrument> allInstruments){
         Scanner scanner = new Scanner(System.in);
-        AfekaInventory afekaInventory = new AfekaInventory();
+        AfekaInventory<MusicalInstrument> afekaInventory = new AfekaInventory<>();
         while (true){
             System.out.println(MENU_STRING);
             if (!scanner.hasNextInt()) {
@@ -74,7 +74,7 @@ public abstract class AfekaInstruments {
                     emptyInventory(scanner, afekaInventory);
                     break;
                 case 7:
-                    printInventory(afekaInventory);
+                    System.out.println(afekaInventory);
                     break;
                 default:
                     scanner.close();
@@ -84,16 +84,8 @@ public abstract class AfekaInstruments {
 
     }
 
-    private static void printInventory(AfekaInventory afekaInventory) {
-        if (afekaInventory.getInstrumentsList().isEmpty()){
-            System.out.println("There Is No Instruments To Show");
-        } else {
-            printInstruments(afekaInventory.getInstrumentsList());
-        }
-        System.out.println(String.format("Total Price: %4.2f Sorted: %s", afekaInventory.getTotalPrice(), afekaInventory.isSorted()));
-    }
 
-    private static void emptyInventory(Scanner scanner, AfekaInventory afekaInventory) {
+    private static void emptyInventory(Scanner scanner, AfekaInventory<MusicalInstrument> afekaInventory) {
         System.out.println("DELETE ALL INSTRUMENTS:");
         if (confirm(scanner)) afekaInventory.removeAll(afekaInventory.getInstrumentsList());
     }
@@ -112,27 +104,31 @@ public abstract class AfekaInstruments {
         }
     }
 
-    private static void searchInstrument(Scanner scanner, AfekaInventory afekaInventory) {
+    private static void searchInstrument(Scanner scanner, AfekaInventory<MusicalInstrument> afekaInventory) {
         System.out.println("SEARCH INSTRUMENT");
         getMusicalInstrumentFromUserInput(scanner, afekaInventory);
     }
 
-    private static void deleteInstrument(Scanner scanner, AfekaInventory afekaInventory) {
+    private static void deleteInstrument(Scanner scanner, AfekaInventory<MusicalInstrument> afekaInventory) {
         System.out.println("DELETE INSTRUMENT");
         MusicalInstrument instrumentToDelete = getMusicalInstrumentFromUserInput(scanner, afekaInventory);
         if (instrumentToDelete != null) {
-            if (confirm(scanner)){
-                boolean success = afekaInventory.removeInstrument(afekaInventory.getInstrumentsList(), instrumentToDelete);
-                if (success){
-                    System.out.println("Instrument deleted successfully!");
-                } else {
-                    System.out.println("Could not delete instrument!");
-                }
+            deleteInstrumentFromInventory(scanner, afekaInventory, instrumentToDelete);
+        }
+    }
+
+    private static void deleteInstrumentFromInventory(Scanner scanner, AfekaInventory<MusicalInstrument> afekaInventory, MusicalInstrument instrumentToDelete) {
+        if (confirm(scanner)){
+            boolean success = afekaInventory.removeInstrument(afekaInventory.getInstrumentsList(), instrumentToDelete);
+            if (success){
+                System.out.println("Instrument deleted successfully!");
+            } else {
+                System.out.println("Could not delete instrument!");
             }
         }
     }
 
-    private static MusicalInstrument getMusicalInstrumentFromUserInput(Scanner scanner, AfekaInventory afekaInventory) {
+    private static MusicalInstrument getMusicalInstrumentFromUserInput(Scanner scanner, AfekaInventory<MusicalInstrument> afekaInventory) {
         double price;
 
         System.out.println("Enter brand: ");
@@ -169,8 +165,7 @@ public abstract class AfekaInstruments {
 
         do {
             System.out.println("Please enter instruments file name / path:");
-            //"C:\\Users\\SBK\\Downloads\\תרגיל בית מס 2\\instruments1b.txt";
-            String filepath = "C:\\Users\\ps3to_000\\Desktop\\instruments1b.txt";//consoleScanner.nextLine();
+            String filepath = consoleScanner.nextLine();
             file = new File(filepath);
             stopLoop = file.exists() && file.canRead();
 

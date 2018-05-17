@@ -1,16 +1,16 @@
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class AfekaInventory implements InventoryManagement {
-    private ArrayList<MusicalInstrument> instrumentsList = new ArrayList<>();
+public class AfekaInventory<T extends MusicalInstrument> implements InventoryManagement {
+    private ArrayList<T> instrumentsList = new ArrayList<>();
     private double totalPrice = 0;
     private boolean isSorted = false;
 
-    public ArrayList<MusicalInstrument> getInstrumentsList() {
+    public ArrayList<T> getInstrumentsList() {
         return instrumentsList;
     }
 
-    public void setInstrumentsList(ArrayList<MusicalInstrument> instrumentsList) {
+    public void setInstrumentsList(ArrayList<T> instrumentsList) {
         this.instrumentsList = instrumentsList;
     }
 
@@ -54,7 +54,7 @@ public class AfekaInventory implements InventoryManagement {
     }
 
     @Override
-    public int binarySearchByBrandAndPrice(ArrayList<? extends MusicalInstrument> sortedArrToSearch, Number price, String brand){
+    public int binarySearchByBrandAndPrice(ArrayList<? extends MusicalInstrument> sortedArrToSearch, Number price, String brand) throws NotSortedException{
         if (!isSorted()){
             throw new NotSortedException("Could not binary search when inventory is not sorted");
         }
@@ -109,5 +109,17 @@ public class AfekaInventory implements InventoryManagement {
 
     public void subtractFromTotalPrice(Number num){
         setTotalPrice(totalPrice - num.doubleValue());
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (T t : getInstrumentsList()) stringBuilder.append(t).append("\n");
+
+        if (getInstrumentsList().isEmpty()) stringBuilder.append("There Is No Instruments To Show");
+
+        stringBuilder.append(String.format("\nTotal Price: %4.2f Sorted: %s", getTotalPrice(), isSorted()));
+        return stringBuilder.toString();
     }
 }

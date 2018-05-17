@@ -1,5 +1,5 @@
 
-public class NotSortedException extends Error {
+public class NotSortedException extends Exception {
     public NotSortedException(String message) {
         super(message);
     }

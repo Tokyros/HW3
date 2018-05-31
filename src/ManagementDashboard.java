@@ -35,10 +35,10 @@ public class ManagementDashboard extends Application {
         afekaInventory.addAllWindInstruments(afekaInstruments, afekaInventory.getInstrumentsList());
         afekaInventory.sortByBrandAndPrice(afekaInventory.getInstrumentsList());
 
-        InventoryDashboard inventoryDashboard = new InventoryDashboard(afekaInventory);
+//        InventoryDashboard inventoryDashboard = new InventoryDashboard();
 
-        Scene scene = new Scene(inventoryDashboard);
-        primaryStage.setScene(scene);
+//        Scene scene = new Scene(inventoryDashboard);
+//        primaryStage.setScene(scene);
 
         primaryStage.show();
 

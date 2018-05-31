@@ -44,7 +44,7 @@ public class AddInstrumentPanel extends Stage {
     private GridPane gridPane = new GridPane();
     private final VBox layoutContainer;
 
-    public AddInstrumentPanel(AfekaInventory<MusicalInstrument> instruments){
+    public AddInstrumentPanel(){
         setTitle("Add an instrument");
         setMinHeight(500);
         setMinWidth(500);

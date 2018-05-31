@@ -12,12 +12,14 @@ import java.util.InputMismatchException;
  * Created by ps3to_000 on 30-May-18.
  */
 public class InventoryDashboard extends BorderPane {
+    private ArrayList<MusicalInstrument> instrumentsToShow;
+    private AfekaInventory<MusicalInstrument> inventoryManager = new AfekaInventory<>();
+    private ArrayList<MusicalInstrument> allInstruments;
+    private int currentInstrumentIndex;
+
     private final Label typeLabel = new Label("Type: ");
     private final Label brandLabel = new Label("Brand: ");
     private final Label priceLabel = new Label("Price: ");
-    private AfekaInventory<MusicalInstrument> inventory;
-    private ArrayList<MusicalInstrument> actualList;
-    private int currentInstrumentIndex;
     private final Button goButton = new Button("Go!");
     private final HBox searchBar = new HBox();
     private final TextField searchField = new TextField();
@@ -32,9 +34,9 @@ public class InventoryDashboard extends BorderPane {
     private final Button deleteButton = new Button("Delete");
     private final Button clearButton = new Button("Clear");
 
-    public InventoryDashboard(AfekaInventory<MusicalInstrument> inventory){
-        this.inventory = inventory;
-        actualList = this.inventory.getInstrumentsList();
+    public InventoryDashboard(ArrayList<MusicalInstrument> instruments){
+        this.allInstruments = instruments;
+        this.instrumentsToShow = instruments;
 
         searchField.setPromptText("Search...");
 
@@ -95,33 +97,55 @@ public class InventoryDashboard extends BorderPane {
 
     private void addButtonEvents() {
         addButton.setOnAction(e -> {
-            AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel(this.inventory);
-            addInstrumentPanel.show();
-            addInstrumentPanel.getAddButton().setOnAction(ev -> {
-                addInstrument(addInstrumentPanel);
-            });
+            openAddPanel();
         });
 
         goButton.setOnAction(event -> {
+            if (allInstruments.isEmpty()) return;
             filterBySearchAndSelectFirst();
         });
 
         previousButton.setOnAction(event -> {
+            if (allInstruments.isEmpty()) return;
             choosePreviousInstrument();
         });
 
         nextButton.setOnAction(event -> {
+            if (allInstruments.isEmpty()) return;
             chooseNextInstrument();
+        });
+
+        clearButton.setOnAction(e -> {
+            if (allInstruments.isEmpty()) return;
+            inventoryManager.removeAll(allInstruments);
+            inventoryManager.removeAll(instrumentsToShow);
+            chooseNextInstrument();
+        });
+
+        deleteButton.setOnAction(e -> {
+            if (instrumentsToShow.isEmpty()) return;
+            MusicalInstrument musicalInstrument = instrumentsToShow.get(currentInstrumentIndex);
+            inventoryManager.removeInstrument(instrumentsToShow, musicalInstrument);
+            inventoryManager.removeInstrument(allInstruments, musicalInstrument);
+            choosePreviousInstrument();
+        });
+    }
+
+    private void openAddPanel() {
+        AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel();
+        addInstrumentPanel.show();
+        addInstrumentPanel.getAddButton().setOnAction(ev -> {
+            addInstrument(addInstrumentPanel);
         });
     }
 
     private void chooseNextInstrument() {
-        if (currentInstrumentIndex < actualList.size() - 1) currentInstrumentIndex++;
-        switchInstrument(currentInstrumentIndex);
+        int newIndex = currentInstrumentIndex < allInstruments.size() - 1 ? ++currentInstrumentIndex : (currentInstrumentIndex = 0);
+        switchInstrument(newIndex);
     }
 
     private void choosePreviousInstrument() {
-        int newIndex = currentInstrumentIndex > 0 ? currentInstrumentIndex-- : (currentInstrumentIndex = actualList.size());
+        int newIndex = currentInstrumentIndex > 0 ? --currentInstrumentIndex : (currentInstrumentIndex = allInstruments.size() - 1);
         switchInstrument(newIndex);
     }
 
@@ -132,28 +156,28 @@ public class InventoryDashboard extends BorderPane {
     }
 
     private void filterInstrumentsBySearch() {
-        this.actualList = new ArrayList<>();
-        for (MusicalInstrument musicalInstrument : this.inventory.getInstrumentsList()) {
-            if (musicalInstrument.toString().toLowerCase().contains(searchField.getText().toLowerCase())) this.actualList.add(musicalInstrument);
+        this.instrumentsToShow = new ArrayList<>();
+        for (MusicalInstrument musicalInstrument : this.allInstruments) {
+            if (musicalInstrument.toString().toLowerCase().contains(searchField.getText().toLowerCase())) this.instrumentsToShow.add(musicalInstrument);
         }
     }
 
     private void switchInstrument(int index) {
-        if (this.actualList.size() <= index) {
-            clearFields(typeField, brandField, priceField);
+        if (this.allInstruments.size() <= index) {
+            clearFields();
         } else {
-            MusicalInstrument instrumentToShow = this.actualList.get(index);
-            showInstrument(typeField, brandField, priceField, instrumentToShow);
+            MusicalInstrument instrumentToShow = this.instrumentsToShow.get(index);
+            showInstrument(instrumentToShow);
         }
     }
 
-    private void clearFields(TextField typeField, TextField brandField, TextField priceField) {
+    private void clearFields() {
         brandField.clear();
         typeField.clear();
         priceField.clear();
     }
 
-    private void showInstrument(TextField typeField, TextField brandField, TextField priceField, MusicalInstrument instrumentToShow) {
+    private void showInstrument(MusicalInstrument instrumentToShow) {
         brandField.setText(instrumentToShow.getBrand());
         typeField.setText(instrumentToShow.getClass().getSimpleName());
         priceField.setText(instrumentToShow.getPrice().toString());
@@ -164,19 +188,19 @@ public class InventoryDashboard extends BorderPane {
             switch (addInstrumentPanel.getInstrumentType()){
                 case "Guitar":
                     Guitar guitar = addGuitar(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getNumberOfStrings(), addInstrumentPanel.getGuitarType());
-                    inventory.addInstrument(inventory.getInstrumentsList(), guitar);
+                    inventoryManager.addInstrument(allInstruments, guitar);
                     break;
                 case "Flute":
                     Flute flute = addFlute(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getMaterial(), addInstrumentPanel.getFluteType());
-                    inventory.addInstrument(inventory.getInstrumentsList(), flute);
+                    inventoryManager.addInstrument(allInstruments, flute);
                     break;
                 case "Saxophone":
                     Saxophone saxophone = addSaxophone(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice());
-                    inventory.addInstrument(inventory.getInstrumentsList(), saxophone);
+                    inventoryManager.addInstrument(allInstruments, saxophone);
                     break;
                 case "Bass":
                     Bass bass = addBass(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getNumberOfStrings(), addInstrumentPanel.getFretless());
-                    inventory.addInstrument(inventory.getInstrumentsList(), bass);
+                    inventoryManager.addInstrument(allInstruments, bass);
                     break;
             }
         } catch (InputMismatchException | IllegalArgumentException e){

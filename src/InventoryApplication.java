@@ -16,20 +16,15 @@ public class InventoryApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        initializeInventory();
-        InventoryDashboard inventoryDashboard = new InventoryDashboard(inventory);
+        File instrumentsFile = getFileFromTextDialog();
+        ArrayList<MusicalInstrument> instruments = new ArrayList<>();
+        AfekaInstruments.loadInstrumentsFromFile(instrumentsFile, instruments);
+
+        InventoryDashboard inventoryDashboard = new InventoryDashboard(instruments);
+
         Scene scene = new Scene(inventoryDashboard);
         primaryStage.setScene(scene);
         primaryStage.show();
-    }
-
-    private void initializeInventory() {
-        File instrumentsFile = getFileFromTextDialog();
-        ArrayList<MusicalInstrument> musicalInstruments = new ArrayList<>();
-        AfekaInstruments.loadInstrumentsFromFile(instrumentsFile, musicalInstruments);
-        inventory.addAllWindInstruments(musicalInstruments, inventory.getInstrumentsList());
-        inventory.addAllStringInstruments(musicalInstruments, inventory.getInstrumentsList());
-        inventory.sortByBrandAndPrice(inventory.getInstrumentsList());
     }
 
     private static File getFileFromTextDialog(){

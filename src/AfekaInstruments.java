@@ -1,4 +1,5 @@
 import javafx.application.Application;
+import javafx.scene.control.Alert;
 import javafx.scene.control.TextInputDialog;
 
 import java.io.File;
@@ -168,8 +169,6 @@ public abstract class AfekaInstruments extends Application {
 
         do {
             System.out.println("Please enter instruments file name / path:");
-            TextInputDialog textInputDialog = new TextInputDialog("C:\\Users\\ps3to_000\\IdeaProjects\\HW3\\src\\instruments1b.txt");
-            textInputDialog.showAndWait().ifPresent(s -> System.out.println(s));
             String filepath = consoleScanner.nextLine();
             file = new File(filepath);
             stopLoop = file.exists() && file.canRead();

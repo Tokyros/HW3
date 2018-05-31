@@ -1,29 +1,27 @@
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.WindowEvent;
 
-import java.beans.EventHandler;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 
 
 /**
  * Created by ps3to_000 on 30-May-18.
  */
 public class InventoryDashboard extends BorderPane {
-    private AfekaInventory<MusicalInstrument> instruments;
+    private AfekaInventory<MusicalInstrument> inventory;
     private ArrayList<MusicalInstrument> actualList;
     private int currentInstrument;
 
-    public InventoryDashboard(AfekaInventory<MusicalInstrument> instruments){
-        this.instruments = instruments;
-        actualList = this.instruments.getInstrumentsList();
+    public InventoryDashboard(AfekaInventory<MusicalInstrument> inventory){
+        this.inventory = inventory;
+        actualList = this.inventory.getInstrumentsList();
 
         TextField searchField = new TextField();
         searchField.setPromptText("Search...");
@@ -68,18 +66,13 @@ public class InventoryDashboard extends BorderPane {
 
         FlowPane actionButtons = new FlowPane();
         Button addButton = new Button("Add");
-        AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel(instruments);
+        AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel(inventory);
         addButton.setOnAction(e -> {
             addInstrumentPanel.show();
         });
 
-        addInstrumentPanel.setOnHiding(new javafx.event.EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                if (addInstrumentPanel.getInstrument() != null){
-                    instruments.addInstrument(instruments.getInstrumentsList(), addInstrumentPanel.getInstrument());
-                }
-            }
+        addInstrumentPanel.getAddButton().setOnAction(e -> {
+            addInstrument(addInstrumentPanel);
         });
 
         Button deleteButton = new Button("Delete");
@@ -95,7 +88,7 @@ public class InventoryDashboard extends BorderPane {
 
         goButton.setOnAction(event -> {
             this.actualList = new ArrayList<>();
-            for (MusicalInstrument musicalInstrument : this.instruments.getInstrumentsList()) {
+            for (MusicalInstrument musicalInstrument : this.inventory.getInstrumentsList()) {
                 if (musicalInstrument.toString().toLowerCase().contains(searchField.getText().toLowerCase())) this.actualList.add(musicalInstrument);
             }
             this.currentInstrument = 0;
@@ -103,8 +96,8 @@ public class InventoryDashboard extends BorderPane {
         });
 
         previousButton.setOnAction(event -> {
-            if (currentInstrument > 0) currentInstrument--;
-            switchInstrument(typeField, brandField, priceField, currentInstrument);
+            int newIndex = currentInstrument > 0 ? currentInstrument-- : (currentInstrument = actualList.size());
+            switchInstrument(typeField, brandField, priceField, newIndex);
         });
 
         nextButton.setOnAction(event -> {
@@ -126,5 +119,62 @@ public class InventoryDashboard extends BorderPane {
             typeField.setText(result.getClass().getSimpleName());
             priceField.setText(result.getPrice().toString());
         }
+    }
+
+    private void addInstrument(AddInstrumentPanel addInstrumentPanel){
+        switch (addInstrumentPanel.getInstrumentType()){
+            case "Guitar":
+                try {
+                    Guitar guitar = addGuitar(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getNumberOfStrings(), addInstrumentPanel.getGuitarType());
+                    inventory.addInstrument(inventory.getInstrumentsList(), guitar);
+                } catch (InputMismatchException e){
+                    Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+                    alert.showAndWait();
+                }
+                break;
+            case "Flute":
+                try {
+                    Flute flute = addFlute(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getMaterial(), addInstrumentPanel.getFluteType());
+                    inventory.addInstrument(inventory.getInstrumentsList(), flute);
+                } catch (InputMismatchException e){
+                    Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+                    alert.showAndWait();
+                }
+                break;
+            case "Saxophone":
+                try {
+                    Saxophone saxophone = addSaxophone(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice());
+                    inventory.addInstrument(inventory.getInstrumentsList(), saxophone);
+                } catch (InputMismatchException e){
+                    Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+                    alert.showAndWait();
+                }
+                break;
+            case "Bass":
+                try {
+                    Bass bass = addBass(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getNumberOfStrings(), addInstrumentPanel.getFretless());
+                    inventory.addInstrument(inventory.getInstrumentsList(), bass);
+                } catch (InputMismatchException e){
+                    Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+                    alert.showAndWait();
+                }
+                break;
+        }
+    }
+
+    private Saxophone addSaxophone(String brand, Number price) {
+        return new Saxophone(brand, price);
+    }
+
+    private Flute addFlute(String brand, Number price, String material, String fluteType) {
+        return new Flute(brand, price, material, fluteType);
+    }
+
+    private Bass addBass(String brand, Number price, int numberOfStrings, boolean fretless) {
+        return new Bass(brand, price, numberOfStrings, fretless);
+    }
+
+    private Guitar addGuitar(String brand, Number price, int numberOfStrings, String guitarType) {
+        return new Guitar(brand, price, numberOfStrings, guitarType);
     }
 }

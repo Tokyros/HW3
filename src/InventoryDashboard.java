@@ -2,9 +2,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
 
 import java.util.ArrayList;
 import java.util.InputMismatchException;
@@ -14,106 +12,133 @@ import java.util.InputMismatchException;
  * Created by ps3to_000 on 30-May-18.
  */
 public class InventoryDashboard extends BorderPane {
+    private final Label typeLabel = new Label("Type: ");
+    private final Label brandLabel = new Label("Brand: ");
+    private final Label priceLabel = new Label("Price: ");
     private AfekaInventory<MusicalInstrument> inventory;
     private ArrayList<MusicalInstrument> actualList;
-    private int currentInstrument;
+    private int currentInstrumentIndex;
+    private final Button goButton = new Button("Go!");
+    private final HBox searchBar = new HBox();
+    private final TextField searchField = new TextField();
+    private final Button previousButton = new Button("<");
+    private final Button nextButton = new Button(">");
+    private final GridPane instrumentDetailsGrid = new GridPane();
+    private final TextField typeField = new TextField();
+    private final TextField brandField = new TextField();
+    private final TextField priceField = new TextField();
+    private final FlowPane actionButtons = new FlowPane();
+    private final Button addButton = new Button("Add");
+    private final Button deleteButton = new Button("Delete");
+    private final Button clearButton = new Button("Clear");
 
     public InventoryDashboard(AfekaInventory<MusicalInstrument> inventory){
         this.inventory = inventory;
         actualList = this.inventory.getInstrumentsList();
 
-        TextField searchField = new TextField();
         searchField.setPromptText("Search...");
 
-        Button goButton = new Button("Go!");
-
-        FlowPane searchBar = new FlowPane();
-        searchBar.setHgap(20);
         searchBar.setPadding(new Insets(20));
-        searchBar.setOrientation(Orientation.HORIZONTAL);
+        searchBar.setSpacing(20);
         searchBar.getChildren().addAll(searchField, goButton);
+        HBox.setHgrow(searchField, Priority.ALWAYS);
         setTop(searchBar);
 
-        Button previousButton = new Button("<");
-        previousButton.setAlignment(Pos.CENTER);
-        setLeft(previousButton);
+        VBox leftBox = new VBox(previousButton);
+        leftBox.setAlignment(Pos.CENTER);
+        setLeft(leftBox);
 
-        Button nextButton = new Button(">");
-        nextButton.setAlignment(Pos.CENTER);
-        setRight(nextButton);
+        VBox rightVBox = new VBox(nextButton);
+        rightVBox.setAlignment(Pos.CENTER);
+        setRight(rightVBox);
 
-        GridPane instrumentDetailsGrid = new GridPane();
-        instrumentDetailsGrid.add(new Label("Type: "), 0, 0);
-        instrumentDetailsGrid.add(new Label("Brand: "), 0, 1);
-        instrumentDetailsGrid.add(new Label("Price: "), 0, 2);
-        TextField typeField = new TextField();
-        typeField.setEditable(false);
-        typeField.setPromptText("No Items");
-        instrumentDetailsGrid.add(typeField, 1, 0, 2, 1);
-        TextField brandField = new TextField();
-        brandField.setEditable(false);
-        brandField.setPromptText("No Items");
-        instrumentDetailsGrid.add(brandField, 1, 1, 2, 1);
-        TextField priceField = new TextField();
-        priceField.setEditable(false);
-        priceField.setPromptText("No Items");
-        instrumentDetailsGrid.add(priceField, 1, 2, 2, 1);
+        adjustTextField(typeField);
+        instrumentDetailsGrid.addRow(0, typeLabel, typeField);
+
+        adjustTextField(brandField);
+        instrumentDetailsGrid.addRow(1, brandLabel, brandField);
+
+        adjustTextField(priceField);
+        instrumentDetailsGrid.addRow(2, priceLabel, priceField);
+
         instrumentDetailsGrid.setHgap(20);
         instrumentDetailsGrid.setVgap(20);
         instrumentDetailsGrid.setAlignment(Pos.CENTER);
         setCenter(instrumentDetailsGrid);
 
-        FlowPane actionButtons = new FlowPane();
+        addActionButtons();
 
-        addActionButtons(inventory, actionButtons);
 
-        goButton.setOnAction(event -> {
-            this.actualList = new ArrayList<>();
-            for (MusicalInstrument musicalInstrument : this.inventory.getInstrumentsList()) {
-                if (musicalInstrument.toString().toLowerCase().contains(searchField.getText().toLowerCase())) this.actualList.add(musicalInstrument);
-            }
-            this.currentInstrument = 0;
-            switchInstrument(typeField, brandField, priceField, this.currentInstrument);
-        });
 
-        previousButton.setOnAction(event -> {
-            int newIndex = currentInstrument > 0 ? currentInstrument-- : (currentInstrument = actualList.size());
-            switchInstrument(typeField, brandField, priceField, newIndex);
-        });
-
-        nextButton.setOnAction(event -> {
-            if (currentInstrument < actualList.size() - 1) currentInstrument++;
-            switchInstrument(typeField, brandField, priceField, currentInstrument);
-        });
-
-        switchInstrument(typeField, brandField, priceField, currentInstrument);
+        switchInstrument(currentInstrumentIndex);
     }
 
-    private void addActionButtons(AfekaInventory<MusicalInstrument> inventory, FlowPane actionButtons) {
-        Button addButton = new Button("Add");
-        AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel(inventory);
-        addButton.setOnAction(e -> {
-            addInstrumentPanel.show();
-        });
+    private void adjustTextField(TextField textField){
+        textField.setEditable(false);
+        textField.setPromptText("No Items");
+    }
 
-        addInstrumentPanel.getAddButton().setOnAction(e -> {
-            addInstrument(addInstrumentPanel);
-        });
-
-        Button deleteButton = new Button("Delete");
-        Button clearButton = new Button("Clear");
-
+    private void addActionButtons() {
         actionButtons.getChildren().addAll(addButton, deleteButton, clearButton);
+        setButtonsStyle();
+        addButtonEvents();
+        setBottom(actionButtons);
+    }
+
+    private void setButtonsStyle() {
         actionButtons.setOrientation(Orientation.HORIZONTAL);
         actionButtons.setAlignment(Pos.CENTER);
         actionButtons.setHgap(20);
         actionButtons.setVgap(20);
         actionButtons.setPadding(new Insets(20));
-
-        setBottom(actionButtons);
     }
 
-    private void switchInstrument(TextField typeField, TextField brandField, TextField priceField, int index) {
+    private void addButtonEvents() {
+        addButton.setOnAction(e -> {
+            AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel(this.inventory);
+            addInstrumentPanel.show();
+            addInstrumentPanel.getAddButton().setOnAction(ev -> {
+                addInstrument(addInstrumentPanel);
+            });
+        });
+
+        goButton.setOnAction(event -> {
+            filterBySearchAndSelectFirst();
+        });
+
+        previousButton.setOnAction(event -> {
+            choosePreviousInstrument();
+        });
+
+        nextButton.setOnAction(event -> {
+            chooseNextInstrument();
+        });
+    }
+
+    private void chooseNextInstrument() {
+        if (currentInstrumentIndex < actualList.size() - 1) currentInstrumentIndex++;
+        switchInstrument(currentInstrumentIndex);
+    }
+
+    private void choosePreviousInstrument() {
+        int newIndex = currentInstrumentIndex > 0 ? currentInstrumentIndex-- : (currentInstrumentIndex = actualList.size());
+        switchInstrument(newIndex);
+    }
+
+    private void filterBySearchAndSelectFirst() {
+        filterInstrumentsBySearch();
+        this.currentInstrumentIndex = 0;
+        switchInstrument(currentInstrumentIndex);
+    }
+
+    private void filterInstrumentsBySearch() {
+        this.actualList = new ArrayList<>();
+        for (MusicalInstrument musicalInstrument : this.inventory.getInstrumentsList()) {
+            if (musicalInstrument.toString().toLowerCase().contains(searchField.getText().toLowerCase())) this.actualList.add(musicalInstrument);
+        }
+    }
+
+    private void switchInstrument(int index) {
         if (this.actualList.size() <= index) {
             clearFields(typeField, brandField, priceField);
         } else {
@@ -159,6 +184,9 @@ public class InventoryDashboard extends BorderPane {
             alert.showAndWait();
         }
 
+        addInstrumentPanel.close();
+        //In case the added instrument should be included in the search results
+        filterInstrumentsBySearch();
     }
 
     private Saxophone addSaxophone(String brand, Number price) {

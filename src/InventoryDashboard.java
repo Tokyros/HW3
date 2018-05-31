@@ -5,7 +5,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
-import javafx.stage.WindowEvent;
 
 import java.util.ArrayList;
 import java.util.InputMismatchException;
@@ -65,26 +64,8 @@ public class InventoryDashboard extends BorderPane {
         setCenter(instrumentDetailsGrid);
 
         FlowPane actionButtons = new FlowPane();
-        Button addButton = new Button("Add");
-        AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel(inventory);
-        addButton.setOnAction(e -> {
-            addInstrumentPanel.show();
-        });
 
-        addInstrumentPanel.getAddButton().setOnAction(e -> {
-            addInstrument(addInstrumentPanel);
-        });
-
-        Button deleteButton = new Button("Delete");
-        Button clearButton = new Button("Clear");
-        actionButtons.getChildren().addAll(addButton, deleteButton, clearButton);
-        actionButtons.setOrientation(Orientation.HORIZONTAL);
-        actionButtons.setAlignment(Pos.CENTER);
-        actionButtons.setHgap(20);
-        actionButtons.setVgap(20);
-        actionButtons.setPadding(new Insets(20));
-
-        setBottom(actionButtons);
+        addActionButtons(inventory, actionButtons);
 
         goButton.setOnAction(event -> {
             this.actualList = new ArrayList<>();
@@ -108,58 +89,76 @@ public class InventoryDashboard extends BorderPane {
         switchInstrument(typeField, brandField, priceField, currentInstrument);
     }
 
+    private void addActionButtons(AfekaInventory<MusicalInstrument> inventory, FlowPane actionButtons) {
+        Button addButton = new Button("Add");
+        AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel(inventory);
+        addButton.setOnAction(e -> {
+            addInstrumentPanel.show();
+        });
+
+        addInstrumentPanel.getAddButton().setOnAction(e -> {
+            addInstrument(addInstrumentPanel);
+        });
+
+        Button deleteButton = new Button("Delete");
+        Button clearButton = new Button("Clear");
+
+        actionButtons.getChildren().addAll(addButton, deleteButton, clearButton);
+        actionButtons.setOrientation(Orientation.HORIZONTAL);
+        actionButtons.setAlignment(Pos.CENTER);
+        actionButtons.setHgap(20);
+        actionButtons.setVgap(20);
+        actionButtons.setPadding(new Insets(20));
+
+        setBottom(actionButtons);
+    }
+
     private void switchInstrument(TextField typeField, TextField brandField, TextField priceField, int index) {
         if (this.actualList.size() <= index) {
-            brandField.clear();
-            typeField.clear();
-            priceField.clear();
+            clearFields(typeField, brandField, priceField);
         } else {
-            MusicalInstrument result = this.actualList.get(index);
-            brandField.setText(result.getBrand());
-            typeField.setText(result.getClass().getSimpleName());
-            priceField.setText(result.getPrice().toString());
+            MusicalInstrument instrumentToShow = this.actualList.get(index);
+            showInstrument(typeField, brandField, priceField, instrumentToShow);
         }
     }
 
+    private void clearFields(TextField typeField, TextField brandField, TextField priceField) {
+        brandField.clear();
+        typeField.clear();
+        priceField.clear();
+    }
+
+    private void showInstrument(TextField typeField, TextField brandField, TextField priceField, MusicalInstrument instrumentToShow) {
+        brandField.setText(instrumentToShow.getBrand());
+        typeField.setText(instrumentToShow.getClass().getSimpleName());
+        priceField.setText(instrumentToShow.getPrice().toString());
+    }
+
     private void addInstrument(AddInstrumentPanel addInstrumentPanel){
-        switch (addInstrumentPanel.getInstrumentType()){
-            case "Guitar":
-                try {
+        try {
+            switch (addInstrumentPanel.getInstrumentType()){
+                case "Guitar":
                     Guitar guitar = addGuitar(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getNumberOfStrings(), addInstrumentPanel.getGuitarType());
                     inventory.addInstrument(inventory.getInstrumentsList(), guitar);
-                } catch (InputMismatchException e){
-                    Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
-                    alert.showAndWait();
-                }
-                break;
-            case "Flute":
-                try {
+                    break;
+                case "Flute":
                     Flute flute = addFlute(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getMaterial(), addInstrumentPanel.getFluteType());
                     inventory.addInstrument(inventory.getInstrumentsList(), flute);
-                } catch (InputMismatchException e){
-                    Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
-                    alert.showAndWait();
-                }
-                break;
-            case "Saxophone":
-                try {
+                    break;
+                case "Saxophone":
                     Saxophone saxophone = addSaxophone(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice());
                     inventory.addInstrument(inventory.getInstrumentsList(), saxophone);
-                } catch (InputMismatchException e){
-                    Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
-                    alert.showAndWait();
-                }
-                break;
-            case "Bass":
-                try {
+                    break;
+                case "Bass":
                     Bass bass = addBass(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getNumberOfStrings(), addInstrumentPanel.getFretless());
                     inventory.addInstrument(inventory.getInstrumentsList(), bass);
-                } catch (InputMismatchException e){
-                    Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
-                    alert.showAndWait();
-                }
-                break;
+                    break;
+            }
+        } catch (InputMismatchException | IllegalArgumentException e){
+            Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alert.showAndWait();
         }
+
     }
 
     private Saxophone addSaxophone(String brand, Number price) {

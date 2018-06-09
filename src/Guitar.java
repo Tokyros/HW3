@@ -16,6 +16,8 @@ public class Guitar extends StringInstrument {
 
     public Guitar(String brand, Number price, int numOfStrings, String type){
         super(brand, price, numOfStrings);
+        setType(type);
+        checkNumberOfStrings(getNumOfStrings());
     }
 
     public Guitar(Scanner scanner){
@@ -29,6 +31,10 @@ public class Guitar extends StringInstrument {
         type = scanner.nextLine();
         setType(type);
 
+        checkNumberOfStrings(numOfStrings);
+    }
+
+    private void checkNumberOfStrings(int numOfStrings) {
         switch (indexOfType()){
             case CLASSIC:
                 if(numOfStrings != CLASSIC_NUM_OF_STRINGS)

@@ -1,3 +1,5 @@
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -12,175 +14,97 @@ import java.util.InputMismatchException;
  * Created by ps3to_000 on 30-May-18.
  */
 public class InventoryDashboard extends BorderPane {
-    private ArrayList<MusicalInstrument> instrumentsToShow;
-    private AfekaInventory<MusicalInstrument> inventoryManager = new AfekaInventory<>();
+    private final InstrumentDetailsGrid instrumentDetailsGrid = new InstrumentDetailsGrid();
+    private ArrayList<MusicalInstrument> instrumentsToShow = new ArrayList<>();
     private ArrayList<MusicalInstrument> allInstruments;
+    private AfekaInventory<MusicalInstrument> inventoryManager = new AfekaInventory<>();
     private int currentInstrumentIndex;
-
-    private final Label typeLabel = new Label("Type: ");
-    private final Label brandLabel = new Label("Brand: ");
-    private final Label priceLabel = new Label("Price: ");
-    private final Button goButton = new Button("Go!");
-    private final HBox searchBar = new HBox();
-    private final TextField searchField = new TextField();
-    private final Button previousButton = new Button("<");
-    private final Button nextButton = new Button(">");
-    private final GridPane instrumentDetailsGrid = new GridPane();
-    private final TextField typeField = new TextField();
-    private final TextField brandField = new TextField();
-    private final TextField priceField = new TextField();
-    private final FlowPane actionButtons = new FlowPane();
-    private final Button addButton = new Button("Add");
-    private final Button deleteButton = new Button("Delete");
-    private final Button clearButton = new Button("Clear");
+    private SimpleStringProperty searchQuery = new SimpleStringProperty();
 
     public InventoryDashboard(ArrayList<MusicalInstrument> instruments){
         this.allInstruments = instruments;
-        this.instrumentsToShow = instruments;
 
-        searchField.setPromptText("Search...");
+        setTop(new SearchBar(e -> onSearch(), searchQuery));
 
-        searchBar.setPadding(new Insets(20));
-        searchBar.setSpacing(20);
-        searchBar.getChildren().addAll(searchField, goButton);
-        HBox.setHgrow(searchField, Priority.ALWAYS);
-        setTop(searchBar);
+        setLeft(new NavigationButtonPane("<", event -> choosePreviousInstrument()));
 
-        VBox leftBox = new VBox(previousButton);
-        leftBox.setAlignment(Pos.CENTER);
-        setLeft(leftBox);
+        setRight(new NavigationButtonPane(">", event -> chooseNextInstrument()));
 
-        VBox rightVBox = new VBox(nextButton);
-        rightVBox.setAlignment(Pos.CENTER);
-        setRight(rightVBox);
-
-        adjustTextField(typeField);
-        instrumentDetailsGrid.addRow(0, typeLabel, typeField);
-
-        adjustTextField(brandField);
-        instrumentDetailsGrid.addRow(1, brandLabel, brandField);
-
-        adjustTextField(priceField);
-        instrumentDetailsGrid.addRow(2, priceLabel, priceField);
-
-        instrumentDetailsGrid.setHgap(20);
-        instrumentDetailsGrid.setVgap(20);
-        instrumentDetailsGrid.setAlignment(Pos.CENTER);
         setCenter(instrumentDetailsGrid);
 
-        addActionButtons();
+        setBottom(new ActionButtonsPane(event -> openAddPanel(), event -> deleteCurrentInstrument(), event -> clearInstruments()));
 
-
-
-        switchInstrument(currentInstrumentIndex);
+        filterInstruments();
+        selectFirstInstrument();
     }
 
-    private void adjustTextField(TextField textField){
-        textField.setEditable(false);
-        textField.setPromptText("No Items");
+    private void onSearch() {
+        filterInstruments();
+        selectFirstInstrument();
     }
 
-    private void addActionButtons() {
-        actionButtons.getChildren().addAll(addButton, deleteButton, clearButton);
-        setButtonsStyle();
-        addButtonEvents();
-        setBottom(actionButtons);
+    private void deleteCurrentInstrument() {
+        if (allInstruments.isEmpty()) return;
+        inventoryManager.removeInstrument(allInstruments, getCurrentInstrument());
+        filterInstruments();
     }
 
-    private void setButtonsStyle() {
-        actionButtons.setOrientation(Orientation.HORIZONTAL);
-        actionButtons.setAlignment(Pos.CENTER);
-        actionButtons.setHgap(20);
-        actionButtons.setVgap(20);
-        actionButtons.setPadding(new Insets(20));
+    private MusicalInstrument getCurrentInstrument() {
+        return instrumentsToShow.get(currentInstrumentIndex);
     }
 
-    private void addButtonEvents() {
-        addButton.setOnAction(e -> {
-            openAddPanel();
-        });
-
-        goButton.setOnAction(event -> {
-            if (allInstruments.isEmpty()) return;
-            filterBySearchAndSelectFirst();
-        });
-
-        previousButton.setOnAction(event -> {
-            if (allInstruments.isEmpty()) return;
-            choosePreviousInstrument();
-        });
-
-        nextButton.setOnAction(event -> {
-            if (allInstruments.isEmpty()) return;
-            chooseNextInstrument();
-        });
-
-        clearButton.setOnAction(e -> {
-            if (allInstruments.isEmpty()) return;
-            inventoryManager.removeAll(allInstruments);
-            inventoryManager.removeAll(instrumentsToShow);
-            chooseNextInstrument();
-        });
-
-        deleteButton.setOnAction(e -> {
-            if (instrumentsToShow.isEmpty()) return;
-            MusicalInstrument musicalInstrument = instrumentsToShow.get(currentInstrumentIndex);
-            inventoryManager.removeInstrument(instrumentsToShow, musicalInstrument);
-            inventoryManager.removeInstrument(allInstruments, musicalInstrument);
-            choosePreviousInstrument();
-        });
+    private void clearInstruments() {
+        if (allInstruments.isEmpty()) return;
+        inventoryManager.removeAll(allInstruments);
+        filterInstruments();
     }
 
     private void openAddPanel() {
         AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel();
         addInstrumentPanel.show();
-        addInstrumentPanel.getAddButton().setOnAction(ev -> {
-            addInstrument(addInstrumentPanel);
-        });
+        addInstrumentPanel.getAddButton().setOnAction(ev -> addInstrument(addInstrumentPanel));
     }
 
     private void chooseNextInstrument() {
-        int newIndex = currentInstrumentIndex < allInstruments.size() - 1 ? ++currentInstrumentIndex : (currentInstrumentIndex = 0);
+        if (instrumentsToShow.isEmpty()) return;
+        int newIndex = currentInstrumentIndex < instrumentsToShow.size() - 1 ? ++currentInstrumentIndex : (currentInstrumentIndex = 0);
         switchInstrument(newIndex);
     }
 
     private void choosePreviousInstrument() {
-        int newIndex = currentInstrumentIndex > 0 ? --currentInstrumentIndex : (currentInstrumentIndex = allInstruments.size() - 1);
+        if (instrumentsToShow.isEmpty()) return;
+        int newIndex = currentInstrumentIndex > 0 ? --currentInstrumentIndex : (currentInstrumentIndex = instrumentsToShow.size() - 1);
         switchInstrument(newIndex);
     }
 
-    private void filterBySearchAndSelectFirst() {
-        filterInstrumentsBySearch();
+    private void selectFirstInstrument() {
         this.currentInstrumentIndex = 0;
         switchInstrument(currentInstrumentIndex);
     }
 
-    private void filterInstrumentsBySearch() {
-        this.instrumentsToShow = new ArrayList<>();
-        for (MusicalInstrument musicalInstrument : this.allInstruments) {
-            if (musicalInstrument.toString().toLowerCase().contains(searchField.getText().toLowerCase())) this.instrumentsToShow.add(musicalInstrument);
+    private void filterInstruments() {
+        instrumentsToShow.clear();
+        if (searchQuery.get() == null) {
+            instrumentsToShow.addAll(allInstruments);
+            return;
         }
+        for (MusicalInstrument musicalInstrument : this.allInstruments) {
+            if (musicalInstrument.toString().toLowerCase().contains(searchQuery.get().toLowerCase())) this.instrumentsToShow.add(musicalInstrument);
+        }
+        if (instrumentsToShow.isEmpty()) clearFields();
+        else selectFirstInstrument();
     }
 
     private void switchInstrument(int index) {
-        if (this.allInstruments.size() <= index) {
-            clearFields();
-        } else {
-            MusicalInstrument instrumentToShow = this.instrumentsToShow.get(index);
-            showInstrument(instrumentToShow);
-        }
+        showInstrument(this.instrumentsToShow.get(index));
     }
 
     private void clearFields() {
-        brandField.clear();
-        typeField.clear();
-        priceField.clear();
+        instrumentDetailsGrid.clearFields();
     }
 
     private void showInstrument(MusicalInstrument instrumentToShow) {
-        brandField.setText(instrumentToShow.getBrand());
-        typeField.setText(instrumentToShow.getClass().getSimpleName());
-        priceField.setText(instrumentToShow.getPrice().toString());
+        instrumentDetailsGrid.setDetails(instrumentToShow.getBrand(), instrumentToShow.getClass().getSimpleName(), instrumentToShow.getPrice());
     }
 
     private void addInstrument(AddInstrumentPanel addInstrumentPanel){
@@ -203,14 +127,12 @@ public class InventoryDashboard extends BorderPane {
                     inventoryManager.addInstrument(allInstruments, bass);
                     break;
             }
+//            addInstrumentPanel.close();
+            filterInstruments();
         } catch (InputMismatchException | IllegalArgumentException e){
             Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
             alert.showAndWait();
         }
-
-        addInstrumentPanel.close();
-        //In case the added instrument should be included in the search results
-        filterInstrumentsBySearch();
     }
 
     private Saxophone addSaxophone(String brand, Number price) {

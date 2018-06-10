@@ -12,6 +12,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -22,7 +23,7 @@ import java.util.Date;
 import java.util.Optional;
 
 public class InventoryApplication extends Application {
-    private final String ANNOUNCMENT_TEXT_TEMPLATE = "Something Something Something %s Something Something";
+    private final String ANNOUNCMENT_TEXT_TEMPLATE = "Something Something Something %s Something Something Something Something Something Something Something Something ";
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -32,7 +33,7 @@ public class InventoryApplication extends Application {
 
         InventoryDashboard inventoryDashboard = new InventoryDashboard(instruments);
         Label announcement = new Label(String.format(ANNOUNCMENT_TEXT_TEMPLATE, new Date().toString()));
-        announcement.setAlignment(Pos.CENTER);
+        announcement.setAlignment(Pos.BASELINE_LEFT);
 
         VBox container = new VBox(StyleConstants.VGAP, inventoryDashboard, announcement);
 

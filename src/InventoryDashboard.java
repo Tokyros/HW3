@@ -35,12 +35,10 @@ public class InventoryDashboard extends BorderPane {
         setBottom(new ActionButtonsPane(event -> openAddPanel(), event -> deleteCurrentInstrument(), event -> clearInstruments()));
 
         filterInstruments();
-        selectFirstInstrument();
     }
 
     private void onSearch() {
         filterInstruments();
-        selectFirstInstrument();
     }
 
     private void deleteCurrentInstrument() {
@@ -61,8 +59,7 @@ public class InventoryDashboard extends BorderPane {
 
     private void openAddPanel() {
         AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel();
-        addInstrumentPanel.show();
-        addInstrumentPanel.getAddButton().setOnAction(ev -> addInstrument(addInstrumentPanel));
+        addInstrumentPanel.setOnAddEvent(ev -> addInstrument(addInstrumentPanel));
     }
 
     private void chooseNextInstrument() {
@@ -88,9 +85,11 @@ public class InventoryDashboard extends BorderPane {
             instrumentsToShow.addAll(allInstruments);
             return;
         }
+        String lowerCaseQuery = searchQuery.get().toLowerCase();
         for (MusicalInstrument musicalInstrument : this.allInstruments) {
-            if (musicalInstrument.toString().toLowerCase().contains(searchQuery.get().toLowerCase())) this.instrumentsToShow.add(musicalInstrument);
+            if (musicalInstrument.toString().toLowerCase().contains(lowerCaseQuery)) this.instrumentsToShow.add(musicalInstrument);
         }
+
         if (instrumentsToShow.isEmpty()) clearFields();
         else selectFirstInstrument();
     }
@@ -108,46 +107,9 @@ public class InventoryDashboard extends BorderPane {
     }
 
     private void addInstrument(AddInstrumentPanel addInstrumentPanel){
-        try {
-            switch (addInstrumentPanel.getInstrumentType()){
-                case "Guitar":
-                    Guitar guitar = addGuitar(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getNumberOfStrings(), addInstrumentPanel.getGuitarType());
-                    inventoryManager.addInstrument(allInstruments, guitar);
-                    break;
-                case "Flute":
-                    Flute flute = addFlute(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getMaterial(), addInstrumentPanel.getFluteType());
-                    inventoryManager.addInstrument(allInstruments, flute);
-                    break;
-                case "Saxophone":
-                    Saxophone saxophone = addSaxophone(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice());
-                    inventoryManager.addInstrument(allInstruments, saxophone);
-                    break;
-                case "Bass":
-                    Bass bass = addBass(addInstrumentPanel.getBrand(), addInstrumentPanel.getPrice(), addInstrumentPanel.getNumberOfStrings(), addInstrumentPanel.getFretless());
-                    inventoryManager.addInstrument(allInstruments, bass);
-                    break;
-            }
-//            addInstrumentPanel.close();
-            filterInstruments();
-        } catch (InputMismatchException | IllegalArgumentException e){
-            Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
-            alert.showAndWait();
-        }
-    }
-
-    private Saxophone addSaxophone(String brand, Number price) {
-        return new Saxophone(brand, price);
-    }
-
-    private Flute addFlute(String brand, Number price, String material, String fluteType) {
-        return new Flute(brand, price, material, fluteType);
-    }
-
-    private Bass addBass(String brand, Number price, int numberOfStrings, boolean fretless) {
-        return new Bass(brand, price, numberOfStrings, fretless);
-    }
-
-    private Guitar addGuitar(String brand, Number price, int numberOfStrings, String guitarType) {
-        return new Guitar(brand, price, numberOfStrings, guitarType);
+        MusicalInstrument newInstrument = addInstrumentPanel.getNewInstrument();
+        if (newInstrument == null) return;
+        inventoryManager.addInstrument(allInstruments, newInstrument);
+        filterInstruments();
     }
 }

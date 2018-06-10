@@ -71,6 +71,7 @@ public class Guitar extends StringInstrument {
     }
 
     public void setType(String type) {
+        if (type == null) throw new InputMismatchException("Guitar type must not be empty!");
         if(isGuitarType(type))
             this.type = type;
         else

@@ -34,6 +34,7 @@ public abstract class MusicalInstrument implements InstrumentFunc{
     }
 
     public void setBrand(String brand) {
+        if (brand == null || brand.isEmpty()) throw new InputMismatchException("Brand must not be empty!");
         this.brand = brand;
     }
 
@@ -51,6 +52,7 @@ public abstract class MusicalInstrument implements InstrumentFunc{
 
 
     protected boolean isValidType(String[] typeArr, String material){
+        if (material == null) return false;
         for(int i = 0; i < typeArr.length ; i++) {
             if (material.equals(typeArr[i])) {
                 return true;

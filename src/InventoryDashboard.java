@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.InputMismatchException;
 
 
-/**
- * Created by ps3to_000 on 30-May-18.
- */
 public class InventoryDashboard extends BorderPane {
     private final InstrumentDetailsGrid instrumentDetailsGrid = new InstrumentDetailsGrid();
     private ArrayList<MusicalInstrument> instrumentsToShow = new ArrayList<>();
@@ -41,7 +38,7 @@ public class InventoryDashboard extends BorderPane {
         filterInstruments();
     }
 
-    private void deleteCurrentInstrument() {
+    public void deleteCurrentInstrument() {
         if (allInstruments.isEmpty()) return;
         inventoryManager.removeInstrument(allInstruments, getCurrentInstrument());
         filterInstruments();
@@ -57,18 +54,18 @@ public class InventoryDashboard extends BorderPane {
         filterInstruments();
     }
 
-    private void openAddPanel() {
+    public void openAddPanel() {
         AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel();
         addInstrumentPanel.setOnAddEvent(ev -> addInstrument(addInstrumentPanel));
     }
 
-    private void chooseNextInstrument() {
+    public void chooseNextInstrument() {
         if (instrumentsToShow.isEmpty()) return;
         int newIndex = currentInstrumentIndex < instrumentsToShow.size() - 1 ? ++currentInstrumentIndex : (currentInstrumentIndex = 0);
         switchInstrument(newIndex);
     }
 
-    private void choosePreviousInstrument() {
+    public void choosePreviousInstrument() {
         if (instrumentsToShow.isEmpty()) return;
         int newIndex = currentInstrumentIndex > 0 ? --currentInstrumentIndex : (currentInstrumentIndex = instrumentsToShow.size() - 1);
         switchInstrument(newIndex);
@@ -79,7 +76,7 @@ public class InventoryDashboard extends BorderPane {
         switchInstrument(currentInstrumentIndex);
     }
 
-    private void filterInstruments() {
+    public void filterInstruments() {
         instrumentsToShow.clear();
         if (searchQuery.get() == null) {
             instrumentsToShow.addAll(allInstruments);

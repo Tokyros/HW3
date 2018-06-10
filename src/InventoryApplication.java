@@ -1,19 +1,11 @@
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.PathTransition;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Line;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -23,42 +15,87 @@ import java.util.Date;
 import java.util.Optional;
 
 public class InventoryApplication extends Application {
-    private final String ANNOUNCMENT_TEXT_TEMPLATE = "Something Something Something %s Something Something Something Something Something Something Something Something ";
+    private final String ANNOUNCMENT_TEXT_TEMPLATE = "%s Afeka Instrument Music Store $$$ ON SALE!!! $$$ Guitars, Basses, Flutes, Saxophones, and more!";
+    private Timeline textTimeline;
+    private Label announcementLabel = new Label();
+    private Scene scene;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         File instrumentsFile = getFileFromTextDialog();
         ArrayList<MusicalInstrument> instruments = new ArrayList<>();
         AfekaInstruments.loadInstrumentsFromFile(instrumentsFile, instruments);
-
         InventoryDashboard inventoryDashboard = new InventoryDashboard(instruments);
-        Label announcement = new Label(String.format(ANNOUNCMENT_TEXT_TEMPLATE, new Date().toString()));
-        announcement.setAlignment(Pos.BASELINE_LEFT);
 
-        VBox container = new VBox(StyleConstants.VGAP, inventoryDashboard, announcement);
+        VBox container = new VBox(StyleConstants.VGAP, inventoryDashboard, announcementLabel);
+        scene = new Scene(container);
+        scene.setOnKeyPressed(e -> {
+            switch (e.getCode()){
+                case ENTER:
+                    inventoryDashboard.filterInstruments();
+                    break;
+                case DELETE:
+                    inventoryDashboard.deleteCurrentInstrument();
+                    break;
+                case RIGHT:
+                    inventoryDashboard.chooseNextInstrument();
+                    break;
+                case LEFT:
+                    inventoryDashboard.choosePreviousInstrument();
+                    break;
+                case A:
+                    inventoryDashboard.openAddPanel();
+                    break;
+            }
+        });
 
-        Scene scene = new Scene(container);
+        prepareAnnouncmentText();
+        createTextAnimation();
+        createClockAnimation();
+
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            announcement.setText(String.format(ANNOUNCMENT_TEXT_TEMPLATE, new Date().toString()));
-        }));
+    private void prepareAnnouncmentText() {
+        updateAnnouncementLabel();
+        announcementLabel.setTextFill(Color.RED);
+    }
+
+    private void createClockAnimation() {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> updateAnnouncementLabel()));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
+    }
 
-        Line line = new Line(0, 0, 150, 0);
-        PathTransition pathTransition = new PathTransition(Duration.millis(1500), line, announcement);
-        inventoryDashboard.widthProperty().addListener(e -> {
-            double newWidth = inventoryDashboard.widthProperty().doubleValue();
-            line.setEndX(newWidth);
-            pathTransition.setDuration(Duration.millis(newWidth*5));
-            pathTransition.stop();
-            pathTransition.play();
-        });
-        pathTransition.setAutoReverse(true);
-        pathTransition.setCycleCount(Animation.INDEFINITE);
-        pathTransition.play();
+    private void updateAnnouncementLabel() {
+        announcementLabel.setText(String.format(ANNOUNCMENT_TEXT_TEMPLATE, new Date().toString()));
+    }
+
+    private void createTextAnimation() {
+        textTimeline = new Timeline();
+        resetTextAnimation();
+        textTimeline.setCycleCount(Timeline.INDEFINITE);
+        textTimeline.play();
+        announcementLabel.setOnMouseEntered(event -> textTimeline.pause());
+        announcementLabel.setOnMouseExited(event -> textTimeline.play());
+        scene.widthProperty().addListener(e -> resetTextAnimation());
+    }
+
+    private void resetTextAnimation() {
+        double sceneWidth = scene.getWidth();
+        double textWidth = announcementLabel.getLayoutBounds().getWidth();
+
+        Duration startDuration = Duration.ZERO;
+        KeyValue startKeyValue = new KeyValue(announcementLabel.translateXProperty(), -textWidth);
+        KeyFrame startKeyFrame = new KeyFrame(startDuration, startKeyValue);
+        Duration endDuration = Duration.seconds(10);
+        KeyValue endKeyValue = new KeyValue(announcementLabel.translateXProperty(), sceneWidth);
+        KeyFrame endKeyFrame = new KeyFrame(endDuration, endKeyValue);
+        textTimeline.stop();
+        textTimeline.getKeyFrames().clear();
+        textTimeline.getKeyFrames().addAll(startKeyFrame, endKeyFrame);
+        textTimeline.play();
     }
 
     private static File getFileFromTextDialog(){

@@ -10,7 +10,7 @@ public class AddFlutePane extends AddWindInstrumentPane {
         super();
         fluteTypeComboBox.setPromptText("Type");
         getBrandTextField().setPromptText("Ex: Levit");
-        getBrandTextField().setPromptText("Ex: 300");
+        getPriceTextField().setPromptText("Ex: 300");
         addRow(3, fluteTypeLabel, fluteTypeComboBox);
     }
 

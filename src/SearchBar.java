@@ -23,6 +23,8 @@ public class SearchBar extends HBox {
         searchField.setPromptText(SEARCH_PROMPT);
         propertyToBind.bind(searchField.textProperty());
 
+        searchField.setFocusTraversable(false);
+
         getChildren().addAll(searchField, goButton);
         HBox.setHgrow(searchField, Priority.ALWAYS);
     }

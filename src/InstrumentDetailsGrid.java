@@ -47,6 +47,7 @@ public class InstrumentDetailsGrid extends GridPane {
     private void adjustTextField(TextField textField){
         textField.setEditable(false);
         textField.setPromptText("No Items");
+        textField.setFocusTraversable(false);
     }
 
     public void clearFields() {

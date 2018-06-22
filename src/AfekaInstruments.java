@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-public abstract class AfekaInstruments extends Application {
+public abstract class AfekaInstruments {
 
     private static final String MENU_STRING = "-------------------------------------------------------------------------\n" +
             "AFEKA MUSICAL INSTRUMENT INVENTORY MENU\n" +

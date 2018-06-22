@@ -1,15 +1,10 @@
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
-public abstract class AddStringInstrumentsPane extends BaseNewInstrumentDetails {
+public abstract class AddStringInstrumentsPane<T extends StringInstrument> extends BaseNewInstrumentDetails<T> {
 
-    private Label numOfStringLabel = new Label("Number of Strings:");
-    private TextField numOfStringTextField = new TextField();
-
-    public AddStringInstrumentsPane(){
-        super();
-        addRow(2, numOfStringLabel, numOfStringTextField);
-    }
+    private Label numOfStringLabel;
+    private TextField numOfStringTextField;
 
     public TextField getNumOfStringTextField() {
         return numOfStringTextField;
@@ -22,5 +17,13 @@ public abstract class AddStringInstrumentsPane extends BaseNewInstrumentDetails 
         } catch (IllegalArgumentException e){
             throw new IllegalArgumentException("Number of strings must be an integer");
         }
+    }
+
+    @Override
+    protected void addComponents() {
+        super.addComponents();
+        numOfStringLabel = new Label("Number of Strings");
+        numOfStringTextField = new TextField();
+        addRow(numOfStringLabel, numOfStringTextField);
     }
 }

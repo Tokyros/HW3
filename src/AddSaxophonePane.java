@@ -3,7 +3,7 @@ import javafx.collections.FXCollections;
 /**
  * Created by SBK on 6/10/2018.
  */
-public class AddSaxophonePane extends AddWindInstrumentPane {
+public class AddSaxophonePane extends AddWindInstrumentPane<Saxophone> {
 
     public AddSaxophonePane() {
         super();
@@ -13,7 +13,7 @@ public class AddSaxophonePane extends AddWindInstrumentPane {
     }
 
     @Override
-    public MusicalInstrument getInstrumentToAdd() {
+    public Saxophone getInstrumentToAdd() {
         return new Saxophone(getBrand(), getPrice());
     }
 }

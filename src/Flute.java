@@ -1,4 +1,3 @@
-import java.io.PrintWriter;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 

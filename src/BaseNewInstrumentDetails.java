@@ -1,30 +1,37 @@
 import javafx.geometry.*;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
-public abstract class BaseNewInstrumentDetails extends GridPane {
-    private Label brandLabel = new Label("Brand:");
-    private TextField brandTextField = new TextField();
+public abstract class BaseNewInstrumentDetails<T extends MusicalInstrument> extends GridPane {
+    private Label brandLabel;
+    private TextField brandTextField;
 
-    private Label priceLabel = new Label("Price:");
-    private TextField priceTextField = new TextField();
+    private Label priceLabel;
+    private TextField priceTextField;
+
+    private int rowCount;
 
     public BaseNewInstrumentDetails(){
+        setStyles();
+        addComponents();
+        setPrompts();
+    }
+
+    private void setStyles() {
         setAlignment(Pos.CENTER);
         setHgap(StyleConstants.HGAP);
         setVgap(StyleConstants.VGAP);
         setPadding(StyleConstants.PADDING_20);
-        addRow(0, brandLabel, brandTextField);
-        addRow(1, priceLabel, priceTextField);
     }
 
 
-    public TextField getBrandTextField() {
+    protected TextField getBrandTextField() {
         return brandTextField;
     }
 
-    public TextField getPriceTextField() {
+    protected TextField getPriceTextField() {
         return priceTextField;
     }
 
@@ -42,5 +49,20 @@ public abstract class BaseNewInstrumentDetails extends GridPane {
         }
     }
 
-    public abstract MusicalInstrument getInstrumentToAdd();
+    protected void addRow(Node... nodes){
+        addRow(++rowCount, nodes);
+    }
+
+    public abstract T getInstrumentToAdd();
+
+    protected abstract void setPrompts();
+
+    protected void addComponents(){
+        brandLabel = new Label("Brand:");
+        brandTextField = new TextField();
+        priceLabel = new Label("Price:");
+        priceTextField = new TextField();
+        addRow(brandLabel, brandTextField);
+        addRow(priceLabel, priceTextField);
+    }
 }

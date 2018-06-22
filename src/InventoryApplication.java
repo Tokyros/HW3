@@ -10,6 +10,9 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
@@ -69,13 +72,15 @@ public class InventoryApplication extends Application {
     }
 
     private void updateAnnouncementLabel() {
-        announcementLabel.setText(String.format(ANNOUNCMENT_TEXT_TEMPLATE, new Date().toString()));
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        announcementLabel.setText(String.format(ANNOUNCMENT_TEXT_TEMPLATE, LocalDateTime.now().format(dateTimeFormatter)));
     }
 
     private void createTextAnimation() {
         textTimeline = new Timeline();
         resetTextAnimation();
         textTimeline.setCycleCount(Timeline.INDEFINITE);
+        textTimeline.setAutoReverse(true);
         textTimeline.play();
         announcementLabel.setOnMouseEntered(event -> textTimeline.pause());
         announcementLabel.setOnMouseExited(event -> textTimeline.play());

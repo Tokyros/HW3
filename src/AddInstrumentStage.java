@@ -11,29 +11,41 @@ import javafx.stage.Stage;
 import java.util.InputMismatchException;
 
 
-public class AddInstrumentPanel extends Stage {
-    private static final ObservableList<String> INSTRUMENT_TYPES = FXCollections.observableArrayList("Guitar", "Saxophone", "Bass", "Flute");
+public class AddInstrumentStage extends Stage {
+    private final int INITIAL_HEIGHT = 500;
+    private final int INITIAL_WIDTH = 500;
 
-    private ComboBox<String> instrumentTypeCombo = new ComboBox<>(INSTRUMENT_TYPES);
+    private final String[] POSSIBLE_INSTRUMENT_TYPES = {"Guitar", "Saxophone", "Bass", "Flute"};
+    private final ObservableList<String> INSTRUMENT_TYPES = FXCollections.observableArrayList(POSSIBLE_INSTRUMENT_TYPES);
+    private final ComboBox<String> instrumentTypeCombo = new ComboBox<>(INSTRUMENT_TYPES);
+
+    private BaseNewInstrumentDetails<? extends MusicalInstrument> addInstrumentPane;
 
     private Button addButton = new Button("Add");
 
-    private final VBox layoutContainer;
+    private VBox layoutContainer;
 
-    public AddInstrumentPanel(){
+    public AddInstrumentStage(){
         setTitle("Add an instrument");
-        setMinHeight(500);
-        setMinWidth(500);
+        setHeight(INITIAL_HEIGHT);
+        setWidth(INITIAL_WIDTH);
 
-        instrumentTypeCombo.setMinWidth(200);
-        instrumentTypeCombo.setPromptText("Choose Instrument Type Here");
-        instrumentTypeCombo.setOnAction(e -> switchLayout(instrumentTypeCombo.getValue()));
+        setupInstrumentTypeCombo();
 
+        setupScene();
+        show();
+    }
+
+    private void setupScene() {
         layoutContainer = new VBox(instrumentTypeCombo);
         layoutContainer.setFillWidth(true);
         layoutContainer.setAlignment(Pos.CENTER);
         setScene(new Scene(layoutContainer));
-        show();
+    }
+
+    private void setupInstrumentTypeCombo() {
+        instrumentTypeCombo.setPromptText("Choose Instrument Type Here");
+        instrumentTypeCombo.setOnAction(e -> switchLayout(instrumentTypeCombo.getValue()));
     }
 
     private void switchLayout(String layoutType){
@@ -73,21 +85,26 @@ public class AddInstrumentPanel extends Stage {
         addButton.setOnAction(onAddEvent);
     }
 
-    private void setGridPane(BaseNewInstrumentDetails addPane){
-        if (layoutContainer.getChildren().size() == 1){
+    private void setGridPane(BaseNewInstrumentDetails<? extends MusicalInstrument> addPane){
+        if (layoutContainer.getChildren().size() <= 1){
             layoutContainer.getChildren().addAll(addPane, addButton);
         } else {
             layoutContainer.getChildren().set(1, addPane);
         }
+        addInstrumentPane = addPane;
     }
 
     public MusicalInstrument getNewInstrument(){
         try {
-            return ((BaseNewInstrumentDetails) layoutContainer.getChildren().get(1)).getInstrumentToAdd();
+            return getAddInstrumentPane().getInstrumentToAdd();
         } catch (InputMismatchException | IllegalArgumentException e){
             Alert alert = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
             alert.showAndWait();
             return null;
         }
+    }
+
+    private BaseNewInstrumentDetails getAddInstrumentPane() {
+        return addInstrumentPane;
     }
 }

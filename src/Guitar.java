@@ -48,7 +48,7 @@ public class Guitar extends StringInstrument {
 
             case ELECTRIC:
                 if(numOfStrings < ELEC_MIN_NUM_OF_STRINGS  || numOfStrings > ELEC_MAX_NUM_OF_STRINGS)
-                    throw new InputMismatchException("Acoustic Guitars have 6 strings, not " + numOfStrings);
+                    throw new InputMismatchException("Electir number of strings is a number between "+ ELEC_MIN_NUM_OF_STRINGS + " and "+ ELEC_MAX_NUM_OF_STRINGS);
                 break;
         }
     }

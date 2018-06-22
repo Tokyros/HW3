@@ -1,13 +1,7 @@
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
 import java.util.ArrayList;
-import java.util.InputMismatchException;
 
 
 public class InventoryDashboard extends BorderPane {
@@ -55,8 +49,8 @@ public class InventoryDashboard extends BorderPane {
     }
 
     public void openAddPanel() {
-        AddInstrumentPanel addInstrumentPanel = new AddInstrumentPanel();
-        addInstrumentPanel.setOnAddEvent(ev -> addInstrument(addInstrumentPanel));
+        AddInstrumentStage addInstrumentStage = new AddInstrumentStage();
+        addInstrumentStage.setOnAddEvent(ev -> addInstrument(addInstrumentStage));
     }
 
     public void chooseNextInstrument() {
@@ -103,8 +97,8 @@ public class InventoryDashboard extends BorderPane {
         instrumentDetailsGrid.setDetails(instrumentToShow.getBrand(), instrumentToShow.getClass().getSimpleName(), instrumentToShow.getPrice());
     }
 
-    private void addInstrument(AddInstrumentPanel addInstrumentPanel){
-        MusicalInstrument newInstrument = addInstrumentPanel.getNewInstrument();
+    private void addInstrument(AddInstrumentStage addInstrumentStage){
+        MusicalInstrument newInstrument = addInstrumentStage.getNewInstrument();
         if (newInstrument == null) return;
         inventoryManager.addInstrument(allInstruments, newInstrument);
         filterInstruments();

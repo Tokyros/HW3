@@ -1,37 +1,39 @@
-import javafx.animation.*;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
 import java.io.File;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Optional;
 
 public class InventoryApplication extends Application {
-    private final String ANNOUNCMENT_TEXT_TEMPLATE = "%s Afeka Instrument Music Store $$$ ON SALE!!! $$$ Guitars, Basses, Flutes, Saxophones, and more!";
-    private Timeline textTimeline;
-    private Label announcementLabel = new Label();
     private Scene scene;
+    private AnimatedAnnouncement animatedAnnouncement;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         File instrumentsFile = getFileFromTextDialog();
         ArrayList<MusicalInstrument> instruments = new ArrayList<>();
         AfekaInstruments.loadInstrumentsFromFile(instrumentsFile, instruments);
-        InventoryDashboard inventoryDashboard = new InventoryDashboard(instruments);
+        prepareScene(instruments);
+        primaryStage.setScene(scene);
+        primaryStage.setOnCloseRequest(e -> animatedAnnouncement.stop());
+        primaryStage.show();
+    }
 
-        VBox container = new VBox(StyleConstants.VGAP, inventoryDashboard, announcementLabel);
+    private void prepareScene(ArrayList<MusicalInstrument> instruments) {
+        InventoryDashboard inventoryDashboard = new InventoryDashboard(instruments);
+        VBox container = new VBox(StyleConstants.VGAP);
         scene = new Scene(container);
+        animatedAnnouncement = new AnimatedAnnouncement(scene);
+        container.getChildren().addAll(inventoryDashboard, animatedAnnouncement);
+        setOnKeyPressed(inventoryDashboard);
+    }
+
+    private void setOnKeyPressed(InventoryDashboard inventoryDashboard) {
         scene.setOnKeyPressed(e -> {
             switch (e.getCode()){
                 case ENTER:
@@ -51,56 +53,6 @@ public class InventoryApplication extends Application {
                     break;
             }
         });
-
-        prepareAnnouncmentText();
-        createTextAnimation();
-        createClockAnimation();
-
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
-
-    private void prepareAnnouncmentText() {
-        updateAnnouncementLabel();
-        announcementLabel.setTextFill(Color.RED);
-    }
-
-    private void createClockAnimation() {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> updateAnnouncementLabel()));
-        timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
-    }
-
-    private void updateAnnouncementLabel() {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        announcementLabel.setText(String.format(ANNOUNCMENT_TEXT_TEMPLATE, LocalDateTime.now().format(dateTimeFormatter)));
-    }
-
-    private void createTextAnimation() {
-        textTimeline = new Timeline();
-        resetTextAnimation();
-        textTimeline.setCycleCount(Timeline.INDEFINITE);
-        textTimeline.setAutoReverse(true);
-        textTimeline.play();
-        announcementLabel.setOnMouseEntered(event -> textTimeline.pause());
-        announcementLabel.setOnMouseExited(event -> textTimeline.play());
-        scene.widthProperty().addListener(e -> resetTextAnimation());
-    }
-
-    private void resetTextAnimation() {
-        double sceneWidth = scene.getWidth();
-        double textWidth = announcementLabel.getLayoutBounds().getWidth();
-
-        Duration startDuration = Duration.ZERO;
-        KeyValue startKeyValue = new KeyValue(announcementLabel.translateXProperty(), -textWidth);
-        KeyFrame startKeyFrame = new KeyFrame(startDuration, startKeyValue);
-        Duration endDuration = Duration.seconds(10);
-        KeyValue endKeyValue = new KeyValue(announcementLabel.translateXProperty(), sceneWidth);
-        KeyFrame endKeyFrame = new KeyFrame(endDuration, endKeyValue);
-        textTimeline.stop();
-        textTimeline.getKeyFrames().clear();
-        textTimeline.getKeyFrames().addAll(startKeyFrame, endKeyFrame);
-        textTimeline.play();
     }
 
     private static File getFileFromTextDialog(){
